@@ -1,0 +1,8 @@
+file(GLOB HEADER_TEST_FILES
+	"besesTest.h"
+)
+file(GLOB SOURCE_TEST_FILES
+	"basicTest.cpp"
+)
+target_add_libaries(basicMemoryScanner LuaPractice)
+source_group("Headers\\Tests"	FILE ${HEADER_TEST_FILES})
