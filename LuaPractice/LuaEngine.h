@@ -57,14 +57,14 @@ class LuaEngine : public LuaPrimitive
     int getDataStructures();
 
   protected:
-    virtual void displayError(std::string error, bool fatal)
+    virtual void displayError(std::string error, bool fatal) // this is a display error method virtual function fatal and error 
     {
         std::cout << (fatal ? "[FTL] " : "[ERR] ");
         std::cout << error << std::endl;
     }
 
   private:
-    struct ScannerPair
+    struct ScannerPair // structs which are private
     {
         ScannerTargetShPtr target;
         ScannerShPtr scanner;
