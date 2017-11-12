@@ -27,3 +27,94 @@ class __LuaEngineExporter
     }                                                        \
 __LuaEngineExporter __exporter##uniq(name, LuaVariant(&__exporter__func##uniq)); //this is continuing after the function definition exporter token being pasted with the uniq which contains the templete of the lua engine and takes the name and the exporter unique token plus the uniq pasted
 
+#define LUAENGINE_EXPORT_FACTORY_KEYS(factoryType, factory, name) \ //this function takes a factorytype and a factory and name as the parameters
+    __LuaEngineFactoryKeyExporter<factoryType::KEY_TYPE, factoryType::BASE_TYPE> __factoryKeyExporter##name(#name, factory) // this is a factory key exporter and a template from the factory type namespce and with a key type and base type types and pastes the name token with a stringizer and a factory as a parameter
+
+extern std::vector<std::pair<const std::string, const std::function<const LuaVariant()>>> __luaEngineExports; // this is a template concatenation with a extern vector key type and basetype which is another lua variant templates
+
+class LuaEngine : public LuaPrimitive
+{
+  public:
+    LuaEngine();
+    ~LuaEngine();
+
+    void doThink();
+
+    /* EXPORTED FUNCTIONS */
+    int settimeout();
+    int ptrcast();
+
+    int attach();
+    int destroy();
+
+    int readMemory();
+    int writeMemory();
+
+    int newScan();
+    int runScan();
+    int getScanResultsSize();
+    int getScanResults();
+    int getDataStructures();
+
+  protected:
+    virtual void displayError(std::string error, bool fatal)
+    {
+        std::cout << (fatal ? "[FTL] " : "[ERR] ");
+        std::cout << error << std::endl;
+    }
+
+  private:
+    struct ScannerPair
+    {
+        ScannerTargetShPtr target;
+        ScannerShPtr scanner;
+    };
+    typedef std::shared_ptr<ScannerPair> ScannerPairShPtr;
+    typedef std::list<ScannerPairShPtr> ScannerPairList;
+    ScannerPairList scanners;
+
+    struct TimedEvent
+    {
+        LuaVariant function;
+        std::chrono::time_point<std::chrono::steady_clock> executeTime;
+    };
+    std::list<TimedEvent> timedEvents;
+
+    LuaVariant createLuaObject(const std::string &typeName, const void *pointer) const;
+    bool getLuaObject(const LuaVariant &object, const std::string &typeName, void *&pointer) const;
+    bool getScannerPair(const LuaVariant &object, ScannerPairList::const_iterator &iterator) const;
+
+    ScannerPairShPtr getArgAsScannerObject(const std::vector<LuaVariant> &args) const;
+
+    const ScanVariant getScanVariantFromLuaVariant(const LuaVariant &variant, const ScanVariant::ScanVariantType &type, bool allowBlank) const;
+    LuaVariant getLuaVariantFromScanVariant(const ScanVariant &variant) const;
+};
+typedef std::shared_ptr<LuaEngine> LuaEngineShPtr;
+
+class __LuaEngineExporter
+{
+  public:
+    __LuaEngineExporter(const char *name, const LuaVariant &value)
+    {
+        __luaEngineExports.push_back(std::make_pair(name, [=]() -> const LuaVariant { return value; }));
+    }
+    ~__LuaEngineExporter() {}
+};
+
+template <typename K, typename A>
+class __LuaEngineFactoryKeyExporter
+{
+  public:
+    __LuaEngineFactoryKeyExporter(const char *name, const KeyedFactory<K, A> &factory)
+    {
+        auto func = [&factory]() -> const LuaVariant {
+            auto keys = factory.getKeys();
+            LuaVariant::LuaVariantITable lkeys;
+            for (auto key = keys.cbegin(); key != keys.cend(); key++)
+                lkeys.push_back(*key);
+            return lkeys;
+        };
+        __luaEngineExports.push_back(std::make_pair(name, func));
+    }
+    ~__LuaEngineFactoryKeyExporter() {}
+};
