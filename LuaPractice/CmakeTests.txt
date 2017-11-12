@@ -1,5 +1,7 @@
 file(GLOB HEADER_TEST_FILES
-	"besesTest.h"
+	"basesTest.h"
+	"basicTest.h"
+	"LuaEngine.h"
 )
 file(GLOB SOURCE_TEST_FILES
 	"basicTest.cpp"
